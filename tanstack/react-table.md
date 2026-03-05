@@ -491,3 +491,119 @@ Result:
 | Task 2 | Pending |
 | Task 3 | In Progress |
 | Task 1 | Completed |
+---
+
+## Column Visiblity
+
+TanStack Table controls visibility through a state object.
+```
+const [columnVisibility, setColumnVisibility] = useState({})
+```
+
+Structure:
+
+```
+{
+  email: false,
+  salary: false
+}
+```
+
+Connect State to Table
+
+```
+const table = useReactTable({
+  data,
+  columns,
+
+  state: {
+    columnVisibility,
+  },
+
+  onColumnVisibilityChange: setColumnVisibility,
+
+  getCoreRowModel: getCoreRowModel(),
+})
+```
+
+Now the table automatically reacts when visibility changes.
+
+**Toggle Column Visibility**
+
+Hide a column:
+```
+table.getColumn("email")?.toggleVisibility(true)
+```
+
+Show a column
+```
+table.getColumn("email")?.toggleVisibility(true)
+```
+
+Automatically
+```
+table.getColumn("email")?.toggleVisibility()
+```
+---
+
+## Column Ordering
+
+TanStack stores the order as an array of column IDs.
+
+```
+const [columnOrder, setColumnOrder] = useState([
+  "name",
+  "email",
+  "role",
+  "salary"
+])
+```
+
+Structure:
+
+```
+[
+  "name",
+  "role",
+  "email",
+  "salary"
+]
+```
+
+```
+Name | Role | Email | Salary
+```
+
+### Connect Column Order to Table
+
+```
+const table = useReactTable({
+  data,
+  columns,
+
+  state: {
+    columnOrder,
+  },
+
+  onColumnOrderChange: setColumnOrder,
+
+  getCoreRowModel: getCoreRowModel(),
+})
+```
+### Change Column Order Programmatically
+
+```
+setColumnOrder([
+  "name",
+  "salary",
+  "email",
+  "role"
+])
+```
+
+Result:
+
+```
+Name | Salary | Email | Role
+```
+
