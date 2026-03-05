@@ -309,3 +309,185 @@ Use it when:
 - manualSorting disables internal sorting
 - getHeaderGroups() enables nested headers
 - Client mode is easier but not scalable``
+
+--- 
+
+## Sorting 
+
+### 1. Client- Side Sorting
+
+The table sorts the data internally.
+
+Setup Sorting State
+```
+import { useState } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+} from "@tanstack/react-table";
+
+const [sorting, setSorting] = useState<SortingState>([]);
+```
+
+Create Table Instance
+
+```
+const table = useReactTable({
+  data,
+  columns,
+
+  state: {
+    sorting,
+  },
+
+  onSortingChange: setSorting,
+
+  getCoreRowModel: getCoreRowModel(),
+  getSortedRowModel: getSortedRowModel(),
+});
+```
+
+Enable Sorting in Columns
+
+```
+const columns = [
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+  {
+    accessorKey: "age",
+    header: "Age",
+  },
+];
+```
+
+Add Click Sorting to Header
+
+```
+<th
+  onClick={header.column.getToggleSortingHandler()}
+>
+  {flexRender(header.column.columnDef.header, header.getContext())}
+
+  {{
+    asc: " 🔼",
+    desc: " 🔽",
+  }[header.column.getIsSorted() as string] ?? null}
+</th>
+```
+
+Sorting Order Cycle
+
+Each click cycles through:
+
+not sorted → asc → desc → not sorted
+
+### 2. Server-Side Sorting
+
+Used when data comes from an API.
+
+Example: fetch sorted data from backend.
+
+```
+const table = useReactTable({
+  data,
+  columns,
+
+  state: {
+    sorting,
+  },
+
+  onSortingChange: setSorting,
+
+  manualSorting: true,
+
+  getCoreRowModel: getCoreRowModel(),
+});
+```
+
+Send Sorting to API
+
+```
+useEffect(() => {
+  fetchUsers({
+    sortBy: sorting[0]?.id,
+    order: sorting[0]?.desc ? "desc" : "asc",
+  });
+}, [sorting]);
+```
+
+### 3. Multi-Column Sorting
+
+Hold Shift while clicking headers: Need to cliling shift else evertime the sorting will reset.
+
+Example state of sorting:
+```
+[
+  { id: "name", desc: false },
+  { id: "age", desc: true }
+]
+```
+
+### 4. Disable Sorting for a Column
+
+```
+{
+  accessorKey: "actions",
+  header: "Actions",
+  enableSorting: false,
+}
+```
+
+### 5. Custom Sorting Function
+
+```
+type Task = {
+  id: number
+  title: string
+  status: "Pending" | "In Progress" | "Completed"
+}
+
+const data: Task[] = [
+  { id: 1, title: "Task 1", status: "Completed" },
+  { id: 2, title: "Task 2", status: "Pending" },
+  { id: 3, title: "Task 3", status: "In Progress" },
+]
+```
+
+Column Definition:
+
+```
+const columns = [
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    sortingFn: (rowA, rowB, columnId) => {
+      const order = {
+        Pending: 1,
+        "In Progress": 2,
+        Completed: 3,
+      }
+
+      const a = order[rowA.getValue(columnId)]
+      const b = order[rowB.getValue(columnId)]
+
+      return a - b
+    },
+  },
+]
+```
+
+Result:
+
+| Title | Status |
+| :--- | :--- |
+| Task 2 | Pending |
+| Task 3 | In Progress |
+| Task 1 | Completed |
